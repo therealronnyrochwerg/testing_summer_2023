@@ -9,7 +9,7 @@ import LGP
 import MAP_Elites
 import pickle
 
-dataX, dataY = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
+
 
 
 def combine_labels(dataY):
@@ -41,17 +41,46 @@ def plot_data(dataX, trueLabels, newLabels):
                 sns.scatterplot(ax=axs[x-1, y - 1], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
                                 palette='deep', legend=False)
 
-def run_regular_lgp(dataX, dataY, num_generation, pop_size):
-    pass
+def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_rate, mut_rate):
+    rng = default_rng(seed = 1)
+    params = LGP.Parameters(dataX.shape[1], rng)
+    population = []
+    # initialization of population
+    for _ in range(pop_size):
+        ind = LGP.LGP(params)
+        ind.initialize(dataX, dataY)
+        population.append(ind)
 
+    for gen in range(num_generation):
+        print("starting generation", gen)
+
+        for _ in range(pop_size//2):
+            winners, losers = LGP.tourney_selection(population,tourney_size, rng)
+            child1 = population[winners[0]].make_copy()
+            child2 = population[winners[1]].make_copy()
+            if rng.random() < recom_rate:
+                child1.recombine(child2)
+            elif rng.random() < mut_rate:
+                child1.mutate()
+                child2.mutate()
+            population[losers[0]] = child1
+            population[losers[1]] = child2
+
+        print("finished generation", gen)
+        print("highest fitness is: ", sorted(population, key=lambda x: x.fitness)[-1])
+        print("average fitness is: ", np.mean([x.fitness for x in population]))
+        print("median fitness is: ", np.median([x.fitness for x in population]))
 
 def run_cos_cvt():
     pass
 
 
 def main():
+    dataX, dataY = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
 
     labels = combine_labels(dataY)
+    print(type(labels[0]))
+    print(dataX.shape[1])
     # for newLabels in labels:
     #     plot_data(dataX, dataY, newLabels)
     #
@@ -67,32 +96,7 @@ def main():
     # with open('test_pickle.pkl', 'rb') as f:
     #     testy = pickle.load(f)
     # print(type(testy))
-    rng = default_rng(seed = 1)
-    pop = []
-    for i in range(100):
-        ind = LGP.LGP(5, rng)
-        ind.initialize()
-        ind.evaluate(np.array([[1,2,3,4,5],[1,1,1,1,1],[-5,-3,2,1,5],[7,8,1,-2,3],[-1,-2,-3,-4,-5]]), np.array([1,-1,1,1,-1]))
-        pop.append(ind)
 
-    pop2 = rng.choice(pop, size=10, replace=False)
-    for i in pop2:
-        print(i.fitness)
-
-    print(pop2)
-    pop2 = sorted(pop2,key=lambda x:x.fitness, reverse=True)[0]
-    print(pop2)
-
-    # print(testy2.instructions)
-    #
-    # child1, child2 = testy.recombine_child(testy2, np.array([[1,2,3,4,5]]), np.array([1]))
-    #
-    # print(child1.instructions)
-    # print(child2.instructions)
-    #
-    # print(testy == testy)
-    # print(testy == testy2)
-    # print(testy == testy.make_copy())
 
 if __name__ == '__main__':
     main()
