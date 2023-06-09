@@ -4,3 +4,6 @@
 [submodule "MAP-Elites"]
 	path = MAP-Elites
 	url = https://github.com/therealronnyrochwerg/MAP-Elites.git
+[submodule "MAP_Elites"]
+	path = MAP_Elites
+	url = https://github.com/therealronnyrochwerg/MAP_Elites.git
