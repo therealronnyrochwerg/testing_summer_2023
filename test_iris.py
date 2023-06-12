@@ -63,13 +63,24 @@ def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_
             elif rng.random() < mut_rate:
                 child1.mutate()
                 child2.mutate()
+
+            child1.evaluate(dataX, dataY)
+            child2.evaluate(dataX, dataY)
             population[losers[0]] = child1
             population[losers[1]] = child2
 
-        print("finished generation", gen)
-        print("highest fitness is: ", sorted(population, key=lambda x: x.fitness)[-1])
-        print("average fitness is: ", np.mean([x.fitness for x in population]))
-        print("median fitness is: ", np.median([x.fitness for x in population]))
+        highest = sorted([x.fitness for x in population])[-1]
+        average = np.mean([x.fitness for x in population])
+        median = np.median([x.fitness for x in population])
+
+        print("finished generation: {}, fitness: highest {}, average {}, median {} \n".format(
+              gen, highest, average, median))
+
+        if highest == 1:
+            return sorted(population, key=lambda x: x.fitness)[-1]
+        # print("highest fitness is: ", sorted(population, key=lambda x: x.fitness)[-1])
+        # print("average fitness is: ", np.mean([x.fitness for x in population]))
+        # print("median fitness is: ", np.median([x.fitness for x in population]))
 
 def run_cos_cvt():
     pass
@@ -79,8 +90,15 @@ def main():
     dataX, dataY = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
 
     labels = combine_labels(dataY)
-    print(type(labels[0]))
-    print(dataX.shape[1])
+
+    plot_data(dataX, dataY, labels[2])
+
+    highest_ind = run_regular_lgp(dataX, labels[2], 1000, 500, 5, 0.9, 1)
+
+    print("regular LGP highest individual")
+    print(highest_ind.instructions) # PUT IN A PRINT FUNCTION FOR LGP
+
+    plt.show()
     # for newLabels in labels:
     #     plot_data(dataX, dataY, newLabels)
     #
