@@ -8,6 +8,7 @@ import pandas as pd
 import LGP
 import MAP_Elites
 import pickle
+from matplotlib.colors import Colormap
 
 
 
@@ -26,33 +27,32 @@ def combine_labels(dataY):
     return new_labels
 
 
-def plot_data(dataX, trueLabels, newLabels):
+def plot_data(dataX, trueLabels, newLabels, palette=None, legened = False):
     fig, axs = plt.subplots(2,3)
 
     for x in range(dataX.shape[1]):
         for y in range(x+1, dataX.shape[1]):
             if x == 0:
                 sns.scatterplot(ax=axs[x,y-1],x = dataX[:,x], y = dataX[:, y], hue=newLabels, style=trueLabels,
-                                palette='deep', legend=False)
+                                palette=palette, legend=legened)
             elif x == 1:
                 sns.scatterplot(ax=axs[x, y - 2], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
-                                palette='deep', legend=False)
+                                palette=palette, legend=legened)
             else:
                 sns.scatterplot(ax=axs[x-1, y - 1], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
-                                palette='deep', legend=False)
+                                palette=palette, legend=legened)
 
 def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_rate, mut_rate):
     rng = default_rng(seed = 1)
     params = LGP.Parameters(dataX.shape[1], rng)
     population = []
     # initialization of population
-    for _ in range(pop_size):
+    for name in range(pop_size):
         ind = LGP.LGP(params)
-        ind.initialize(dataX, dataY)
+        ind.initialize(dataX, dataY, name = name)
         population.append(ind)
 
     for gen in range(num_generation):
-        print("starting generation", gen)
 
         for _ in range(pop_size//2):
             winners, losers = LGP.tourney_selection(population,tourney_size, rng)
@@ -73,30 +73,38 @@ def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_
         average = np.mean([x.fitness for x in population])
         median = np.median([x.fitness for x in population])
 
-        print("finished generation: {}, fitness: highest {}, average {}, median {} \n".format(
-              gen, highest, average, median))
+        if int(gen % (num_generation//50)) == 0:
+            print("finished generation: {}, fitness: highest {}, average {}, median {} \n".format(
+                  gen, highest, average, median))
 
         if highest == 1:
+            print("finished generation: {}, fitness: highest {}, average {}, median {} \n".format(
+                  gen, highest, average, median))
             return sorted(population, key=lambda x: x.fitness)[-1]
         # print("highest fitness is: ", sorted(population, key=lambda x: x.fitness)[-1])
         # print("average fitness is: ", np.mean([x.fitness for x in population]))
         # print("median fitness is: ", np.median([x.fitness for x in population]))
+    return sorted(population, key=lambda x: x.fitness)[-1]
 
 def run_cos_cvt():
     pass
 
 
 def main():
+    Cmap = sns.color_palette("viridis", as_cmap=True)
     dataX, dataY = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
 
     labels = combine_labels(dataY)
 
-    plot_data(dataX, dataY, labels[2])
+    plot_data(dataX, dataY, labels[2], palette=Cmap) #palette = 'deep'
 
-    highest_ind = run_regular_lgp(dataX, labels[2], 1000, 500, 5, 0.9, 1)
+    highest_ind = run_regular_lgp(dataX, labels[2], 500, 500, 5, 0.9, 1)
 
     print("regular LGP highest individual")
-    print(highest_ind.instructions) # PUT IN A PRINT FUNCTION FOR LGP
+    highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
+    highest_ind.print_program(effective=True)
+
+    plot_data(dataX, dataY, highest_ind.predictions, palette=Cmap, legened=True)
 
     plt.show()
     # for newLabels in labels:
