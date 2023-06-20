@@ -86,8 +86,23 @@ def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_
         # print("median fitness is: ", np.median([x.fitness for x in population]))
     return sorted(population, key=lambda x: x.fitness)[-1]
 
-def run_cos_cvt():
-    pass
+def run_cos_cvt(dataX, dataY, num_generation, init_pop_size, num_per_gen, recom_rate, mut_rate, num_niches, rng):
+    model_param = LGP.Parameters(dataX.shape[1], rng)
+    cvt_param = MAP_Elites.Parameters(dataX, dataY, dataX.shape[0], rng, LGP.LGP, model_param)
+    cvt_param.pop_init_amount = init_pop_size
+    cvt_param.generation_amount = num_per_gen
+    cvt_param.recom_rate = recom_rate
+    cvt_param.mut_rate = mut_rate
+    cvt_param.num_niches = num_niches
+
+    CVT = MAP_Elites.MAPElites(cvt_param)
+    CVT.initialize()
+
+    for i in range(num_generation):
+        CVT.sim_generation()
+        CVT.print_map()
+        print(CVT.niche_popularity)
+
 
 
 def main():
@@ -96,32 +111,21 @@ def main():
 
     labels = combine_labels(dataY)
 
-    plot_data(dataX, dataY, labels[2], palette=Cmap) #palette = 'deep'
+    # plot_data(dataX, dataY, labels[2], palette=Cmap) #palette = 'deep'
 
-    highest_ind = run_regular_lgp(dataX, labels[2], 500, 500, 5, 0.9, 1)
+    # highest_ind = run_regular_lgp(dataX, labels[2], 500, 500, 5, 0.9, 1)
+    #
+    # print("regular LGP highest individual")
+    # highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
+    # highest_ind.print_program(effective=True)
+    #
+    # plot_data(dataX, dataY, highest_ind.predictions, palette=Cmap, legened=True)
 
-    print("regular LGP highest individual")
-    highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
-    highest_ind.print_program(effective=True)
 
-    plot_data(dataX, dataY, highest_ind.predictions, palette=Cmap, legened=True)
+    run_cos_cvt(dataX, labels[2], 5, 500, 500, 0.9, 1, 4, default_rng(seed=1))
 
     plt.show()
-    # for newLabels in labels:
-    #     plot_data(dataX, dataY, newLabels)
-    #
-    # plt.show()
 
-    # testy = LGP.LGP(5)
-    #
-    # testy.initialize()
-    # print(testy.instructions)
-    # with open('test_pickle.pkl','wb') as f:
-    #     pickle.dump(testy, f)
-    #[[4, -3, 2, 3], [7, 0, -2, 4], [1, 0, -3, 1], [9, 11, 1, 1], [8, -7, 4, 0], [7, -2, 13, 3], [2, 6, 1, 0], [9, 10, 3, 3], [0, -3, 2, 4], [2, 9, 9, 1], [1, 2, -9, 0], [3, 8, -6, 2], [6, 14, -5, 2], [5, -5, 11, 1], [6, -3, 6, 4]]
-    # with open('test_pickle.pkl', 'rb') as f:
-    #     testy = pickle.load(f)
-    # print(type(testy))
 
 
 if __name__ == '__main__':
