@@ -1,7 +1,7 @@
 from pmlb import fetch_data
 from sklearn.model_selection import train_test_split
 import numpy as np
-from numpy.random import default_rng
+from numpy.random import default_rng, shuffle, permutation
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -161,8 +161,8 @@ def run_cos_cvt(dataX, dataY, num_generation, init_pop_size, num_per_gen, recom_
     cvt_param.num_niches = num_niches
 
     CVT = MAP_Elites.MAPElites(cvt_param)
-    CVT.initialize()
-    plot_behaviour(dataX, CVT.centroids, dataY, 2, palette)
+    CVT.initialize_centroids()
+    CVT.initialize_population()
 
     for gen in range(num_generation):
         CVT.sim_generation()
@@ -173,6 +173,11 @@ def run_cos_cvt(dataX, dataY, num_generation, init_pop_size, num_per_gen, recom_
     return CVT
 
 
+def unison_shuffled_copies(a, b, rng):
+    assert len(a) == len(b)
+    p = rng.permutation(len(a))
+    return a[p], b[p]
+
 def main():
     Cmap = sns.color_palette("viridis", as_cmap=True)
     dataX, dataY = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
@@ -181,22 +186,20 @@ def main():
 
     testing_data = dataX[:,(0,2)]
 
-    plot_data(dataX, dataY, labels[0], palette=Cmap) #palette = 'deep'
+    # plot_data(dataX, dataY, labels[0], palette=Cmap) #palette = 'deep'
 
-    highest_ind = run_regular_lgp(testing_data, labels[0],500, 500, 5, 0.9, 1)
-
-    plot_models(testing_data,[highest_ind],labels[0],2,Cmap)
+    # highest_ind = run_regular_lgp(testing_data, labels[0],500, 500, 5, 0.9, 1)
+    #
+    # plot_models(testing_data,[highest_ind],labels[0],2,Cmap)
 
     # print("regular LGP highest individual")
     # highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
     # highest_ind.print_program(effective=True)
 
 
-    CVT = run_cos_cvt(testing_data, labels[0], 500, 500, 500, 0.9, 1, 4, default_rng(seed=3),palette=Cmap)
+    CVT = run_cos_cvt(testing_data, labels[0], 50, 5000, 500, 0.9, 1, 8, default_rng(),palette=Cmap)
 
-    plot_behaviour(testing_data, CVT.centroids, labels[0], 2, Cmap, legend=True)
-
-
+    plot_behaviour(testing_data, CVT.gen_centroids, labels[0], 4, Cmap, legend=True)
 
     cvt_models = [x for x in CVT.mapE.values() if x]
 
