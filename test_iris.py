@@ -50,9 +50,10 @@ def gen_points(dataX,num_points):
 
     return np.mgrid[min1:max1:complex(imag=np.sqrt(num_points)), min2:max2:complex(imag=np.sqrt(num_points))].reshape(2,-1).T
 
-def plot_models(dataX, models, true_labels, total_columns, palette=None, legend=False):
+def plot_models(dataX, models, true_labels, total_columns, palette=None):
     num_plots = len(models)*2
     total_cols = total_columns
+    plots = [None] * num_plots
     if num_plots % total_cols == 0:
         total_rows = num_plots // total_cols
     else:
@@ -68,22 +69,48 @@ def plot_models(dataX, models, true_labels, total_columns, palette=None, legend=
             pos1 = (i*2) % total_cols
             row2 = (i*2+1) // total_cols
             pos2 = (i*2+1) % total_cols
+
+            norm = plt.Normalize(min(model.predictions), max(model.predictions))
+            sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
+            sm.set_array([])
+
             sns.scatterplot(ax=axs[row1, pos1], x=dataX[:, 0], y=dataX[:, 1], hue=model.predictions, style=true_labels,
-                            palette=palette, legend=legend)
+                            palette=palette, legend=False)
+
+            fig.colorbar(sm, ax=axs[row1,pos1])
+
             model_behaviour = model.predict(data_span)
+            norm = plt.Normalize(min(model_behaviour), max(model_behaviour))
+            sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
+            sm.set_array([])
+
             sns.scatterplot(ax=axs[row2, pos2], x=data_span[:,0], y=data_span[:, 1], hue=model_behaviour,
-                            palette=palette, legend=legend)
+                            palette=palette, legend=False)
+            fig.colorbar(sm, ax=axs[row2,pos2])
     else:
         for i, model in enumerate(models):
             pos1 = i*2
             pos2 = i*2+1
-            sns.scatterplot(ax=axs[pos1], x=dataX[:, 0], y=dataX[:, 1], hue=model.predictions, style=true_labels,
-                            palette=palette, legend=legend)
-            model_behaviour = model.predict(data_span)
-            sns.scatterplot(ax=axs[pos2], x=data_span[:, 0], y=data_span[:, 1], hue=model_behaviour,
-                            palette=palette, legend=legend)
 
-def plot_behaviour(dataX, behaviours, true_labels, total_columns, palette=None, legend=False):
+            norm = plt.Normalize(min(model.predictions), max(model.predictions))
+            sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
+            sm.set_array([])
+
+            sns.scatterplot(ax=axs[pos1], x=dataX[:, 0], y=dataX[:, 1], hue=model.predictions, style=true_labels,
+                            palette=palette, legend=False)
+            fig.colorbar(sm, ax=axs[pos1])
+
+
+            model_behaviour = model.predict(data_span)
+            norm = plt.Normalize(min(model_behaviour), max(model_behaviour))
+            sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
+            sm.set_array([])
+
+            sns.scatterplot(ax=axs[pos2], x=data_span[:, 0], y=data_span[:, 1], hue=model_behaviour,
+                            palette=palette, legend=False)
+            fig.colorbar(sm, ax=axs[pos2])
+
+def plot_behaviour(dataX, behaviours, true_labels, total_columns, palette=None):
     num_plots = len(behaviours)
     total_cols = total_columns
     if num_plots % total_cols == 0:
@@ -97,14 +124,26 @@ def plot_behaviour(dataX, behaviours, true_labels, total_columns, palette=None, 
         for i, behaviour in enumerate(behaviours):
             row1 = i // total_cols
             pos1 = i % total_cols
+
+            norm = plt.Normalize(min(behaviour), max(behaviour))
+            sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
+            sm.set_array([])
+
             sns.scatterplot(ax=axs[row1, pos1], x=dataX[:, 0], y=dataX[:, 1], hue=behaviour, style=true_labels,
-                            palette=palette, legend=legend)
+                            palette=palette, legend=False)
+            fig.colorbar(sm, ax=axs[row1,pos1])
+
     else:
         for i, behaviour in enumerate(behaviours):
             pos1 = i
-            sns.scatterplot(ax=axs[pos1], x=dataX[:, 0], y=dataX[:, 1], hue=behaviour, style=true_labels,
-                            palette=palette, legend=legend)
 
+            norm = plt.Normalize(min(behaviour), max(behaviour))
+            sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
+            sm.set_array([])
+
+            sns.scatterplot(ax=axs[pos1], x=dataX[:, 0], y=dataX[:, 1], hue=behaviour, style=true_labels,
+                            palette=palette, legend=False)
+            fig.colorbar(sm, ax=axs[pos1])
 
 
 def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_rate, mut_rate):
@@ -180,11 +219,17 @@ def unison_shuffled_copies(a, b, rng):
 
 def main():
     Cmap = sns.color_palette("viridis", as_cmap=True)
-    dataX, dataY = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
+    # dataX_iris, dataY_iris = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
+    spiral_data = np.loadtxt('../data/spiral_data.txt')
+    dataX_spiral = spiral_data[:,0:2]
+    dataY_spiral = spiral_data[:,2]
 
-    labels = combine_labels(dataY)
+    # labels_iris = combine_labels(dataY_iris)
 
-    testing_data = dataX[:,(0,2)]
+    testing_data = dataX_spiral
+    testing_labels = dataY_spiral
+
+
 
     # plot_data(dataX, dataY, labels[0], palette=Cmap) #palette = 'deep'
 
@@ -197,16 +242,16 @@ def main():
     # highest_ind.print_program(effective=True)
 
 
-    CVT = run_cos_cvt(testing_data, labels[0], 50, 5000, 500, 0.9, 1, 8, default_rng(),palette=Cmap)
+    CVT = run_cos_cvt(testing_data, testing_labels, 500, 5000, 500, 0.9, 1, 6, default_rng(seed=1),palette=Cmap)
 
-    plot_behaviour(testing_data, CVT.gen_centroids, labels[0], 4, Cmap, legend=True)
+    plot_behaviour(testing_data, CVT.gen_centroids, testing_labels, 4, Cmap)
 
     cvt_models = [x for x in CVT.mapE.values() if x]
 
     for model in cvt_models:
         model.print_program(effective=True)
 
-    plot_models(testing_data, cvt_models, labels[0],4,Cmap, legend=True)
+    plot_models(testing_data, cvt_models, testing_labels,4,Cmap)
 
 
     plt.show()
