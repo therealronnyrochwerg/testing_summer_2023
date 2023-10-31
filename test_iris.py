@@ -9,6 +9,7 @@ import LGP
 import MAP_Elites
 import pickle
 from matplotlib.colors import Colormap
+import time
 
 
 
@@ -28,7 +29,7 @@ def combine_labels(dataY):
 
 
 def plot_data(dataX, trueLabels, newLabels, palette=None, legend = False):
-    fig, axs = plt.subplots(2,3)
+    fig, axs = plt.subplots(2,2)
 
     for x in range(dataX.shape[1]):
         for y in range(x+1, dataX.shape[1]):
@@ -74,7 +75,9 @@ def plot_models(dataX, models, true_labels, total_columns, palette=None):
             sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
             sm.set_array([])
 
-            sns.scatterplot(ax=axs[row1, pos1], x=dataX[:, 0], y=dataX[:, 1], hue=model.predictions, style=true_labels,
+            hue_map = model.predictions
+            hue_map[0] = hue_map[0] - 0.000001
+            sns.scatterplot(ax=axs[row1, pos1], x=dataX[:, 0], y=dataX[:, 1], hue=hue_map, style=true_labels,
                             palette=palette, legend=False)
 
             fig.colorbar(sm, ax=axs[row1,pos1])
@@ -84,7 +87,9 @@ def plot_models(dataX, models, true_labels, total_columns, palette=None):
             sm = plt.cm.ScalarMappable(cmap=palette, norm=norm)
             sm.set_array([])
 
-            sns.scatterplot(ax=axs[row2, pos2], x=data_span[:,0], y=data_span[:, 1], hue=model_behaviour,
+            hue_map = model_behaviour
+            hue_map[0] = hue_map[0] - 0.000001
+            sns.scatterplot(ax=axs[row2, pos2], x=data_span[:,0], y=data_span[:, 1], hue=hue_map,
                             palette=palette, legend=False)
             fig.colorbar(sm, ax=axs[row2,pos2])
     else:
@@ -219,30 +224,33 @@ def unison_shuffled_copies(a, b, rng):
 
 def main():
     Cmap = sns.color_palette("viridis", as_cmap=True)
-    # dataX_iris, dataY_iris = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
+    dataX_iris, dataY_iris = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
     spiral_data = np.loadtxt('../data/spiral_data.txt')
     dataX_spiral = spiral_data[:,0:2]
     dataY_spiral = spiral_data[:,2]
 
-    # labels_iris = combine_labels(dataY_iris)
+    labels_iris = combine_labels(dataY_iris)
+    dataX_iris = dataX_iris[:,(0,2)]
+    testing_data = dataX_iris
+    testing_labels = labels_iris[0]
 
-    testing_data = dataX_spiral
-    testing_labels = dataY_spiral
 
-
-
-    # plot_data(dataX, dataY, labels[0], palette=Cmap) #palette = 'deep'
-
-    # highest_ind = run_regular_lgp(testing_data, labels[0],500, 500, 5, 0.9, 1)
+    plot_data(dataX_iris, dataY_iris, labels_iris[0], palette=Cmap) #palette = 'deep'
+    plt.show()
+    exit()
+    st_reg = time.time()
+    highest_ind = run_regular_lgp(testing_data, testing_labels,505, 1000, 5, 0.9, 1)
+    et_reg = time.time()
     #
-    # plot_models(testing_data,[highest_ind],labels[0],2,Cmap)
+    plot_models(testing_data,[highest_ind],testing_labels,2,Cmap)
 
-    # print("regular LGP highest individual")
+    print("regular LGP highest individual")
     # highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
-    # highest_ind.print_program(effective=True)
+    highest_ind.print_program(effective=True)
 
-
-    CVT = run_cos_cvt(testing_data, testing_labels, 500, 5000, 500, 0.9, 1, 6, default_rng(seed=1),palette=Cmap)
+    st_cvt = time.time()
+    CVT = run_cos_cvt(testing_data, testing_labels, 500, 5000, 1000, 0.9, 1, 6, default_rng(seed=1),palette=Cmap)
+    et_cvt = time.time()
 
     plot_behaviour(testing_data, CVT.gen_centroids, testing_labels, 4, Cmap)
 
@@ -255,6 +263,9 @@ def main():
 
 
     plt.show()
+
+    print("time taken for regular:", et_reg - st_reg, 'seconds')
+    print("time taken for cvt:", et_cvt - st_cvt, 'seconds')
 
 
 
