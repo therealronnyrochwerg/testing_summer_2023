@@ -10,8 +10,7 @@ import MAP_Elites
 import pickle
 from matplotlib.colors import Colormap
 import time
-
-
+from k_means_constrained import KMeansConstrained as kmeans
 
 
 def combine_labels(dataY):
@@ -29,19 +28,21 @@ def combine_labels(dataY):
 
 
 def plot_data(dataX, trueLabels, newLabels, palette=None, legend = False):
-    fig, axs = plt.subplots(2,2)
-
-    for x in range(dataX.shape[1]):
-        for y in range(x+1, dataX.shape[1]):
-            if x == 0:
-                sns.scatterplot(ax=axs[x,y-1],x = dataX[:,x], y = dataX[:, y], hue=newLabels, style=trueLabels,
-                                palette=palette, legend=legend)
-            elif x == 1:
-                sns.scatterplot(ax=axs[x, y - 2], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
-                                palette=palette, legend=legend)
-            else:
-                sns.scatterplot(ax=axs[x-1, y - 1], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
-                                palette=palette, legend=legend)
+    # fig, axs = plt.subplots(2,2)
+    fig = plt.figure()
+    axs = plt.axes()
+    sns.scatterplot(ax=axs, x=dataX[:, 0], y=dataX[:, 1], hue=newLabels, style=trueLabels, palette=palette, legend=legend)
+    # for x in range(dataX.shape[1]):
+    #     for y in range(x+1, dataX.shape[1]):
+    #         if x == 0:
+    #             sns.scatterplot(ax=axs[x,y-1],x = dataX[:,x], y = dataX[:, y], hue=newLabels, style=trueLabels,
+    #                             palette=palette, legend=legend)
+    #         elif x == 1:
+    #             sns.scatterplot(ax=axs[x, y - 2], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
+    #                             palette=palette, legend=legend)
+    #         else:
+    #             sns.scatterplot(ax=axs[x-1, y - 1], x=dataX[:, x], y=dataX[:, y], hue=newLabels, style=trueLabels,
+    #                             palette=palette, legend=legend)
 
 def gen_points(dataX,num_points):
     min1 = np.min(dataX[:,0])
@@ -150,10 +151,9 @@ def plot_behaviour(dataX, behaviours, true_labels, total_columns, palette=None):
                             palette=palette, legend=False)
             fig.colorbar(sm, ax=axs[pos1])
 
-
-def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_rate, mut_rate):
-    rng = default_rng(seed = 1)
+def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_rate, mut_rate, rng):
     params = LGP.Parameters(dataX.shape[1], rng)
+    params.operators = [0,1,2,3,4] #setting usable operators (+,-,x,/,<)
     population = []
     # initialization of population
     for name in range(pop_size):
@@ -167,11 +167,11 @@ def run_regular_lgp(dataX, dataY, num_generation, pop_size, tourney_size, recom_
             winners, losers = LGP.tourney_selection(population,tourney_size, rng)
             child1 = population[winners[0]].make_copy()
             child2 = population[winners[1]].make_copy()
-            if rng.random() < recom_rate:
-                child1.recombine(child2)
-            elif rng.random() < mut_rate:
+            if rng.random() < mut_rate:
                 child1.mutate()
                 child2.mutate()
+            elif rng.random() < recom_rate:
+                child1.recombine(child2)
 
             child1.evaluate(dataX, dataY)
             child2.evaluate(dataX, dataY)
@@ -216,13 +216,79 @@ def run_cos_cvt(dataX, dataY, num_generation, init_pop_size, num_per_gen, recom_
             print(CVT.niche_popularity)
     return CVT
 
-
 def unison_shuffled_copies(a, b, rng):
     assert len(a) == len(b)
     p = rng.permutation(len(a))
     return a[p], b[p]
 
+# finding the points close to the boundary using a complex model (threshold is the % of points to take)
+def find_boundary_points(dataX, model, threshold):
+    predictions = model.predict(dataX, tanh=False) #getting predictions
+    sorted_predictions = np.argsort([abs(i) for i in predictions]) #getting the indices of the sorted predictions
+    threshold_val = int(len(predictions) * threshold) #getting how many points to include
+
+    boundary_points = sorted_predictions[:threshold_val] #indices of boundary points
+    boundary_points_data = dataX[sorted_predictions[:threshold_val]] #data of boundary points
+    return boundary_points, boundary_points_data #returning the data of the boundary points as well
+
+def find_clusters(boundary_data, dataX, rng):
+    clf = kmeans(n_clusters=3, size_min=int(0.1*len(boundary_data)), random_state=rng)
+
+    boundary_clusters = clf.fit_predict(boundary_data) + 1
+
+    clusters = clf.predict(dataX, size_min=None, size_max=None) + 1
+
+    return boundary_clusters, clusters
+
+'''Old main from cvt Map Elites'''
+# def main():
+#     Cmap = sns.color_palette("viridis", as_cmap=True)
+#     dataX_iris, dataY_iris = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
+#     spiral_data = np.loadtxt('../data/spiral_data.txt')
+#     dataX_spiral = spiral_data[:,0:2]
+#     dataY_spiral = spiral_data[:,2]
+#
+#     labels_iris = combine_labels(dataY_iris)
+#     dataX_iris = dataX_iris[:,(0,2)]
+#     testing_data = dataX_iris
+#     testing_labels = labels_iris[0]
+#
+#
+#     plot_data(dataX_iris, dataY_iris, labels_iris[0], palette=Cmap) #palette = 'deep'
+#     plt.show()
+#     exit()
+#     st_reg = time.time()
+#     highest_ind = run_regular_lgp(testing_data, testing_labels,505, 1000, 5, 0.9, 1)
+#     et_reg = time.time()
+#     #
+#     plot_models(testing_data,[highest_ind],testing_labels,2,Cmap)
+#
+#     print("regular LGP highest individual")
+#     # highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
+#     highest_ind.print_program(effective=True)
+#
+#     st_cvt = time.time()
+#     CVT = run_cos_cvt(testing_data, testing_labels, 500, 5000, 1000, 0.9, 1, 6, default_rng(seed=1),palette=Cmap)
+#     et_cvt = time.time()
+#
+#     plot_behaviour(testing_data, CVT.gen_centroids, testing_labels, 4, Cmap)
+#
+#     cvt_models = [x for x in CVT.mapE.values() if x]
+#
+#     for model in cvt_models:
+#         model.print_program(effective=True)
+#
+#     plot_models(testing_data, cvt_models, testing_labels,4,Cmap)
+#
+#
+#     plt.show()
+#
+#     print("time taken for regular:", et_reg - st_reg, 'seconds')
+#     print("time taken for cvt:", et_cvt - st_cvt, 'seconds')
+
+'''main for kmeans boundary stuff'''
 def main():
+    rng = default_rng(seed=1)
     Cmap = sns.color_palette("viridis", as_cmap=True)
     dataX_iris, dataY_iris = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
     spiral_data = np.loadtxt('../data/spiral_data.txt')
@@ -234,39 +300,32 @@ def main():
     testing_data = dataX_iris
     testing_labels = labels_iris[0]
 
-
     plot_data(dataX_iris, dataY_iris, labels_iris[0], palette=Cmap) #palette = 'deep'
-    plt.show()
-    exit()
+
     st_reg = time.time()
-    highest_ind = run_regular_lgp(testing_data, testing_labels,505, 1000, 5, 0.9, 1)
+    highest_ind = run_regular_lgp(testing_data, testing_labels,100, 1000, 5, 0.9, 1, rng)
     et_reg = time.time()
-    #
-    plot_models(testing_data,[highest_ind],testing_labels,2,Cmap)
+    print("time taken for regular:", et_reg - st_reg, 'seconds')
 
-    print("regular LGP highest individual")
-    # highest_ind.print_program() # PUT IN A PRINT FUNCTION FOR LGP
-    highest_ind.print_program(effective=True)
+    plot_models(testing_data, [highest_ind], testing_labels, 2, Cmap)
 
-    st_cvt = time.time()
-    CVT = run_cos_cvt(testing_data, testing_labels, 500, 5000, 1000, 0.9, 1, 6, default_rng(seed=1),palette=Cmap)
-    et_cvt = time.time()
+    boundary_points_ind, boundary_points_data, = find_boundary_points(dataX_iris, highest_ind, 0.3)
 
-    plot_behaviour(testing_data, CVT.gen_centroids, testing_labels, 4, Cmap)
+    boundary_coloring = np.zeros(len(testing_labels), dtype=int)
+    boundary_coloring[boundary_points_ind] = 1
 
-    cvt_models = [x for x in CVT.mapE.values() if x]
+    plot_data(dataX_iris, labels_iris[0], boundary_coloring)
 
-    for model in cvt_models:
-        model.print_program(effective=True)
+    boundary_clusters, clusters = find_clusters(boundary_points_data, dataX_iris, rng=0)
 
-    plot_models(testing_data, cvt_models, testing_labels,4,Cmap)
+    boundary_coloring[boundary_points_ind] = boundary_clusters
 
+
+    plot_data(dataX_iris, labels_iris[0], boundary_coloring, palette=Cmap)
+
+    plot_data(dataX_iris, labels_iris[0], clusters, palette=Cmap)
 
     plt.show()
-
-    print("time taken for regular:", et_reg - st_reg, 'seconds')
-    print("time taken for cvt:", et_cvt - st_cvt, 'seconds')
-
 
 
 if __name__ == '__main__':
