@@ -1,9 +1,9 @@
 [submodule "LGP"]
 	path = LGP
 	url = https://github.com/therealronnyrochwerg/LGP.git
-[submodule "MAP-Elites"]
-	path = MAP-Elites
-	url = https://github.com/therealronnyrochwerg/MAP-Elites.git
+[submodule "Population_Evolution"]
+	path = Population_Evolution
+	url = https://github.com/therealronnyrochwerg/Population_Evolution.git
 [submodule "MAP_Elites"]
 	path = MAP_Elites
 	url = https://github.com/therealronnyrochwerg/MAP_Elites.git
