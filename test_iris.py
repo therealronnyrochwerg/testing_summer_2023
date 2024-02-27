@@ -11,6 +11,7 @@ import pickle
 from matplotlib.colors import Colormap
 import time
 from k_means_constrained import KMeansConstrained as kmeans
+import Population_Evolution as Population
 
 
 def combine_labels(dataY):
@@ -289,6 +290,7 @@ def find_clusters(boundary_data, dataX, rng):
 '''main for kmeans boundary stuff'''
 def main():
     rng = default_rng(seed=1)
+
     Cmap = sns.color_palette("viridis", as_cmap=True)
     dataX_iris, dataY_iris = fetch_data('iris', return_X_y=True, local_cache_dir='..\data')
     spiral_data = np.loadtxt('../data/spiral_data.txt')
@@ -300,12 +302,21 @@ def main():
     testing_data = dataX_iris
     testing_labels = labels_iris[0]
 
+    model_param = LGP.Parameters(dataX_iris.shape[1], rng)
+    model_param.operators = [0, 1, 2, 3, 4]
+    population_param = Population.Parameters(rng, LGP.LGP, model_param, testing_data, testing_labels)
+
+    population = Population.Population(population_param)
+    population.initialize_run()
+    population.run_evolution(10)
+    highest_ind = population.return_best()
+
     plot_data(dataX_iris, dataY_iris, labels_iris[0], palette=Cmap) #palette = 'deep'
 
-    st_reg = time.time()
-    highest_ind = run_regular_lgp(testing_data, testing_labels,100, 1000, 5, 0.9, 1, rng)
-    et_reg = time.time()
-    print("time taken for regular:", et_reg - st_reg, 'seconds')
+    # st_reg = time.time()
+    # highest_ind = run_regular_lgp(testing_data, testing_labels,100, 1000, 5, 0.9, 1, rng)
+    # et_reg = time.time()
+    # print("time taken for regular:", et_reg - st_reg, 'seconds')
 
     plot_models(testing_data, [highest_ind], testing_labels, 2, Cmap)
 
