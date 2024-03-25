@@ -1,0 +1,8 @@
+Printing effective instructions for individual 394,1,3,1,2,1,3,5,5,7,1,4,4,2,6,1,2,5,4,2,4
+INP1 > 6:
+R0 = INP0 + INP0
+R0 = R0 + INP0
+R2 = R0 - INP1
+R0 = 7 / R2
+R0 = R2 + R0
+

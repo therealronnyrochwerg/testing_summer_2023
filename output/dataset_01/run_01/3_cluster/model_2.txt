@@ -1,0 +1,5 @@
+Printing effective instructions for individual 52,1,1,10,1,1,3,2,1,1,1,4,2
+R0 = 5 * INP0
+R1 = INP1 + INP1
+R0 = R0 - R1
+

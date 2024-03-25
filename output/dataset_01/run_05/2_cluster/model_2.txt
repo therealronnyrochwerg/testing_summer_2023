@@ -1,0 +1,107 @@
+finished generation: 0, fitness: best 12.908612368253111, average inf, median 52.314912425954894 
+
+finished generation: 2, fitness: best 10.793508087037152, average inf, median 30.02322881691295 
+
+finished generation: 4, fitness: best 9.919787954212522, average inf, median 18.963434760293424 
+
+finished generation: 6, fitness: best 9.919787954212522, average inf, median 17.90367201748613 
+
+finished generation: 8, fitness: best 9.418956093583585, average inf, median 16.793866655181965 
+
+finished generation: 10, fitness: best 9.418956093583585, average inf, median 16.793866655181965 
+
+finished generation: 12, fitness: best 6.294723631203071, average inf, median 16.793866655181965 
+
+finished generation: 14, fitness: best 6.294723631203071, average inf, median 16.793866655181965 
+
+finished generation: 16, fitness: best 6.294723631203071, average inf, median 16.793866655181965 
+
+finished generation: 18, fitness: best 6.294723631203071, average inf, median 16.793866655181965 
+
+finished generation: 20, fitness: best 6.294723631203071, average inf, median 16.736032966440717 
+
+finished generation: 22, fitness: best 6.294723631203071, average inf, median 15.47552370129518 
+
+finished generation: 24, fitness: best 6.294723631203071, average inf, median 15.47552370129518 
+
+finished generation: 26, fitness: best 6.294723631203071, average inf, median 15.419014352447148 
+
+finished generation: 28, fitness: best 6.294723631203071, average inf, median 15.419014352447148 
+
+finished generation: 30, fitness: best 6.294723631203071, average inf, median 13.759356816088458 
+
+finished generation: 32, fitness: best 6.294723631203071, average inf, median 13.637844377120357 
+
+finished generation: 34, fitness: best 6.294723631203071, average inf, median 13.637844377120357 
+
+finished generation: 36, fitness: best 6.294723631203071, average inf, median 13.637844377120357 
+
+finished generation: 38, fitness: best 6.294723631203071, average inf, median 13.637844377120357 
+
+finished generation: 40, fitness: best 5.3634570964311115, average inf, median 13.637844377120357 
+
+finished generation: 42, fitness: best 5.3634570964311115, average inf, median 13.637844377120357 
+
+finished generation: 44, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 46, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 48, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 50, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 52, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 54, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 56, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 58, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 60, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 62, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 64, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 66, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 68, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 70, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 72, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 74, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 76, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 78, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 80, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 82, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 84, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 86, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 88, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 90, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 92, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 94, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 96, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+finished generation: 98, fitness: best 5.2607712456490985, average inf, median 13.637844377120357 
+
+Printing effective instructions for individual 833,3,1,3,1,6,3,5,1,2,4,6,3,6
+R3 = R1 - INP1
+R0 = INP0 + R3
+R0 > 3:
+R0 = 2 - INP1
+R0 = R0 + R1
+

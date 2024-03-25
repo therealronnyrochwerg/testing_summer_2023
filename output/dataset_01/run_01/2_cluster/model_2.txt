@@ -1,0 +1,5 @@
+Printing effective instructions for individual 250,3,6,3,5,13,1,2,1,1,2
+R3 = R2 - 3
+R2 = INP0 - INP1
+R0 = R2 + R3
+

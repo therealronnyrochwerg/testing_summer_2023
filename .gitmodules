@@ -7,3 +7,6 @@
 [submodule "MAP_Elites"]
 	path = MAP_Elites
 	url = https://github.com/therealronnyrochwerg/MAP_Elites.git
+[submodule "MOCK"]
+	path = MOCK
+	url = https://github.com/therealronnyrochwerg/MOCK

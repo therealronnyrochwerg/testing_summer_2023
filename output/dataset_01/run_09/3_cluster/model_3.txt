@@ -1,0 +1,9 @@
+Printing effective instructions for individual 807,5,1,2,2,2,4,2,1,11,4,2,13,4,1,2,6,5
+R3 = INP1 + R1
+R2 > R0:
+R3 > 7:
+INP1 > INP0:
+R0 = INP0 - R3
+R3 = R0 * R3
+R0 = R3 - INP1
+

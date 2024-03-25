@@ -1,0 +1,23 @@
+operators_symbols: 	 ['+', '-', '*', '/', '>', 'sin', 'cos']
+operators: 	 [0, 1, 2, 3, 4]
+num_operators: 	 7
+init_length: 	 [5, 6, 7, 8, 9, 10]
+max_length: 	 15
+min_length: 	 4
+constants: 	 [-1, -2, -3, -4, -5, -6, -7, -8, -9]
+input_sep: 	 True
+num_registers: 	 4
+num_features: 	 2
+num_all: 	 6
+registers: 	 [0, 1, 2, 3]
+features: 	 [4, 5]
+all_readable: 	 [0, 1, 2, 3, 4, 5]
+mac_mut_rate: 	 0.5
+mic_mut_rate: 	 0.5
+recombination_type: 	 one_point_crossover
+max_dc: 	 5
+constant_rate: 	 0.5
+rng: 	 Generator(PCG64)
+effective_initialization: 	 False
+effective_mutation: 	 False
+effective_recombination: 	 False

@@ -1,0 +1,15 @@
+Printing effective instructions for individual 439,1,7,1,4,3,5,2,10,1,2,1,2,3,2,1,5,7
+R3 = INP0 / 4
+R3 > 9:
+R1 = INP1 / 3
+INP0 > R1:
+R0 = R1 - INP1
+R2 = R3 / INP0
+R0 = R0 * 4
+INP1 > INP1:
+R0 > R2:
+R0 = INP0 - 5
+3 > INP1:
+R0 = R0 - R2
+R0 = R0 * 4
+

@@ -1,0 +1,16 @@
+Printing effective instructions for individual 508,1,1,2,1,1,1,1,17,2,3,3,1,5,2,3,4,4,1
+R0 = R1 * INP1
+R2 = 5 / 3
+R0 = R0 + INP0
+R3 = R0 * R1
+R0 = R2 - INP0
+R3 = 5 * R3
+R0 = R0 - R3
+9 > R0:
+R0 > R2:
+R1 = INP0 - 2
+R1 > INP1:
+R1 > 3:
+R0 = INP0 - INP1
+R0 = R0 + R2
+

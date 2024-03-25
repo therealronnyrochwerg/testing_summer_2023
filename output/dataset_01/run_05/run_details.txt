@@ -1,0 +1,9 @@
+percentage_boundary_points: 	 0.4
+amount_boundary_points: 	 40
+cluster_values: 	 [2, 3]
+min_cluster_size_percent: 	 0.7
+cluster_size_min: 	 [14, 9]
+cluster_size_max: 	 [None, None]
+weight_pairs: 	 [[1, 0], [1, 1], [0.9, 0.1], [0.7, 0.3]]
+chosen_weight: 	 2
+distance_based: 	 False

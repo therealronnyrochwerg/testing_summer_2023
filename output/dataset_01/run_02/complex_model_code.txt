@@ -1,0 +1,19 @@
+
+    # Building a complex model to find the decision boundary
+    set_random_seed(1)
+    model = Sequential()
+    model.add(Dense(128, activation='relu'))  # Input layer with 2 features, 32 neurons, ReLU activation
+    model.add(Dense(64, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
+    model.add(Dense(32, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
+    model.add(
+    Dense(1, activation='sigmoid'))  # Output layer with 1 neuron, sigmoid activation for binary classification
+
+    # adding an early stopping criteria for the model
+    # if want to use, add 'callbacks=[callback]' to model.fit
+    # callback = EarlyStopping(monitor='accuracy', patience=20, start_from_epoch=50)
+    # Compile the model
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    # Train the model
+    model.fit(data_x, data_y, epochs=1000, batch_size=32)
+    

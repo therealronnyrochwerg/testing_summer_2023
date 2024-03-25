@@ -1,0 +1,16 @@
+Printing effective instructions for individual 801,3,2,5,5,1,1,2,1,1,1,7,11,1,5,1,1,1,2,1,1,1,3,2,1,1,3,3
+R2 = 5 - INP0
+INP0 > 1:
+R2 = R2 / R2
+R2 = INP1 / R2
+INP0 > R2:
+R2 = INP0 / R2
+3 > INP1:
+9 > R2:
+R2 = 3 + 8
+INP0 > R2:
+R2 = R2 / 8
+INP1 > 7:
+R3 = INP0 + R2
+R0 = R3 - INP1
+

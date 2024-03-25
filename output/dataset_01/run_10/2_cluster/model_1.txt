@@ -1,0 +1,8 @@
+Printing effective instructions for individual 539,1,1,9,2,1,4,1,2,1,1,1,2,4,3,6,2,2,3,2,3,3,1,1,1,2,1,2
+R1 = 5 * INP0
+R3 = 5 - INP1
+R1 > 9:
+R0 = INP0 - INP1
+5 > R1:
+R0 = R3 + R0
+
