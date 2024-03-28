@@ -1,3 +1,4 @@
+import ctypes
 import glob
 import shutil
 from pmlb import fetch_data
@@ -21,6 +22,7 @@ from keras.utils import set_random_seed
 from keras.callbacks import EarlyStopping
 from scipy.spatial import distance
 import os
+import tracemalloc
 
 
 
@@ -136,7 +138,6 @@ def plot_model_heatmap(data_span, data_x, data_y, model, fld_name, plt_name, wei
 
     save_path = fld_name + '/' + plt_name + '.png'
     plt.savefig(save_path, bbox_inches='tight')
-
 
 def gen_points(dataX,num_points):
     min1 = np.min(dataX[:,0]) - 0.5
@@ -453,218 +454,250 @@ def find_data_weights(chosen_cluster, data_x, clusters, cluster_center, cluster_
 #     plt.show()
 
 '''main for kmeans boundary stuff (using synthetic data)'''
+# def main():
+#     # setting rng for run
+#     rng = default_rng(seed=1)
+#
+#     # choosing what dataset to use
+#     dataset_name = 'dataset_02.pkl'
+#     fld_dataset_name = dataset_name.removesuffix('.pkl')
+#     fld_dataset_path = "output/" + fld_dataset_name
+#
+#     # choosing whether to remove previous runs and data of dataset
+#     rmv_prev_dataset_data = False
+#
+#     # if we want to overwrite the previous run with this one
+#     overwrite_prev_run = True
+#
+#     try:
+#         os.makedirs(fld_dataset_path)
+#     except FileExistsError:
+#         if rmv_prev_dataset_data:
+#             shutil.rmtree(fld_dataset_path)
+#             os.makedirs(fld_dataset_path)
+#
+#
+#     # loading the pickled dataset
+#     with open("data/" + dataset_name, 'rb') as f:
+#         data = pickle.load(f)
+#
+#     # splitting data into variables and target
+#     data_x = data[:,0:-1]
+#     data_y = data[:,-1]
+#     num_samples, num_var = data_x.shape
+#     data_span = gen_points(data_x, 50000) #used for heatmaps
+#     #plotting the raw data
+#     if rmv_prev_dataset_data:
+#         plot_data(data_x[:,0], data_x[:,1], fld_dataset_path, 'raw_data', color=data_y)
+#
+#
+#     # the run parameters
+#     percentage_boundary_points = 0.4 #percent of points to choose when selecting boundary points
+#     amount_boundary_points = int(len(data_y) * percentage_boundary_points)
+#     cluster_values = [2] # different cluster values to test
+#     # possible [cluster, non-cluster] weights to choose from
+#     weight_pairs = [
+#         [1, 0],  # only points in cluster are relevant
+#         # [1, 1],  # equivalent to ensemble on all data
+#         # [0.9, 0.1],
+#         # [0.7, 0.3]
+#     ]
+#
+#     distance_based = False #whether weights are determined by point distance to clusters
+#
+#     # minimum and maximum sizes of clusters
+#     min_cluster_size_percent = 0.7 # percent of boundary points that must be evenly distributed among the clusters
+#     cluster_size_min = [int((min_cluster_size_percent/ k) * amount_boundary_points) for k in cluster_values]
+#     cluster_size_max = [None for k in cluster_values]
+#
+#     for i in range(len(weight_pairs)):
+#         chosen_weight = i
+#         run_parameters = {
+#             'percentage_boundary_points': percentage_boundary_points,
+#             'amount_boundary_points': amount_boundary_points,
+#             'cluster_values': cluster_values,
+#             'min_cluster_size_percent': min_cluster_size_percent,
+#             'cluster_size_min': cluster_size_min,
+#             'cluster_size_max': cluster_size_max,
+#             'weight_pairs': weight_pairs,
+#             'chosen_weight': chosen_weight,
+#             'distance_based': distance_based
+#         }
+#         if len(glob.glob('run*', root_dir=fld_dataset_path)) == 0:
+#             fld_run_name = 'run_01'
+#         else:
+#             if overwrite_prev_run:
+#                 fld_run_name = sorted(glob.glob('run*', root_dir=fld_dataset_path), reverse=True, key=lambda x: int(x[-2:]))[0]
+#             else:
+#                 fld_run_name = 'run_{:02d}'.format(int(
+#                     sorted(glob.glob('run*', root_dir=fld_dataset_path), reverse=True, key=lambda x: int(x[-2:]))[0][-2:]) + 1)
+#         # run folder path
+#         fld_run_path = fld_dataset_path + '/' + fld_run_name
+#
+#         # creating the folder or deleting the previous one
+#         try:
+#             os.makedirs(fld_run_path)
+#         except FileExistsError:
+#             shutil.rmtree(fld_run_path)
+#             os.makedirs(fld_run_path)
+#
+#         with open(fld_run_path + '/run_details.txt', 'w') as f:
+#             for k, v in run_parameters.items():
+#                 print('{}: \t {}'.format(k, v), file=f)
+#
+#
+#         # Building a complex model to find the decision boundary
+#         set_random_seed(1)
+#         model = Sequential()
+#         model.add(Dense(128, activation='relu'))  # Input layer with 2 features, 32 neurons, ReLU activation
+#         model.add(Dense(64, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
+#         model.add(Dense(32, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
+#         model.add(
+#         Dense(1, activation='sigmoid'))  # Output layer with 1 neuron, sigmoid activation for binary classification
+#
+#         # adding an early stopping criteria for the model
+#         # if want to use, add 'callbacks=[callback]' to model.fit
+#         # callback = EarlyStopping(monitor='accuracy', patience=20, start_from_epoch=50)
+#         # Compile the model
+#         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+#
+#         # Train the model
+#         model.fit(data_x, data_y, epochs=1000, batch_size=32)
+#
+#         # plotting the complex model heatmap
+#         plot_model_heatmap(data_span, data_x, data_y, model, fld_run_path, 'complex_model_heatmap')
+#
+#         # saving complex model information for specific run
+#         with open(fld_run_path + '/complex_model_code.txt', 'w') as f:
+#             f.write('''
+#         # Building a complex model to find the decision boundary
+#         set_random_seed(1)
+#         model = Sequential()
+#         model.add(Dense(128, activation='relu'))  # Input layer with 2 features, 32 neurons, ReLU activation
+#         model.add(Dense(64, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
+#         model.add(Dense(32, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
+#         model.add(
+#         Dense(1, activation='sigmoid'))  # Output layer with 1 neuron, sigmoid activation for binary classification
+#
+#         # adding an early stopping criteria for the model
+#         # if want to use, add 'callbacks=[callback]' to model.fit
+#         # callback = EarlyStopping(monitor='accuracy', patience=20, start_from_epoch=50)
+#         # Compile the model
+#         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+#
+#         # Train the model
+#         model.fit(data_x, data_y, epochs=1000, batch_size=32)
+#         '''
+#         )
+#
+#
+#
+#         # finding the data points along to boundary
+#         boundary_points_ind, boundary_points_data, = find_boundary_points(data_x, model, percentage_boundary_points)
+#
+#         # plotting the points along the boundary
+#         boundary_coloring = np.zeros(len(data_y), dtype=int)
+#         boundary_coloring[boundary_points_ind] = 1
+#
+#         plot_data(data_x[:, 0], data_x[:, 1], fld_run_path, 'boundary_points', color=boundary_coloring, markers=data_y)
+#
+#
+#
+#
+#         cluster_weight, non_cluster_weight = weight_pairs[chosen_weight]
+#
+#         # going through each k value and creating models
+#         for cluster_val in range(len(cluster_values)):
+#             k = cluster_values[cluster_val]
+#             size_min = cluster_size_min[cluster_val]
+#             size_max = cluster_size_max[cluster_val]
+#             # making sure there is a folder for the k value to save the output
+#             k_fld_path = fld_run_path + '/' + repr(k) + '_cluster'
+#             try:
+#                 os.makedirs(k_fld_path)
+#             except FileExistsError:
+#                 pass
+#
+#             # finding the boundary and full clusters according the k value
+#             boundary_clusters, clusters, cluster_centers = find_clusters(k, boundary_points_data, data_x, size_min=size_min,size_max=size_max, rng=0)
+#
+#             # plotting the boundary and full clusters
+#             boundary_coloring[boundary_points_ind] = boundary_clusters
+#             plot_data(data_x[:, 0], data_x[:, 1], k_fld_path, 'boundary_clusters', color=boundary_coloring, markers=data_y)
+#             plot_data(data_x[:, 0], data_x[:, 1], k_fld_path, 'full_clusters', color=clusters, markers=data_y)
+#
+#             # setting up the lgp models to be used on each cluster
+#             model_param = LGP.Parameters(num_var, rng)
+#             model_param.operators = [0, 1, 2, 3, 4] #limiting operators to +,-,*,/
+#             model_param.init_length = list(range(5,11))
+#             model_param.max_length = 25
+#             model_param.min_length = 4
+#             model_param.max_dc = 5 # maximum crossover distance
+#             # need to fix effective stuff
+#             # (initialization can only work with input sep = false, macro mut should just run
+#             #   intron itself instead of keeping hold of eff reg)
+#             # model_param.effective_mutation = True
+#             # model_param.effective_initialization = True
+#             # model_param.effective_recombination = True
+#
+#             with open(k_fld_path + '/LGP_model_param.txt', 'w') as f:
+#                 model_param.print_attributes(file=f)
+#
+#
+#             # building a model for each cluster
+#             for cluster in set(clusters):
+#                 # cluster_data_x = data_x[clusters == cluster]
+#                 # cluster_data_y = data_y[clusters == cluster]
+#                 cluster_center = cluster_centers[cluster-1]
+#                 cluster_weights = find_data_weights(cluster,data_x,clusters,cluster_center,cluster_weight,non_cluster_weight,distance_based)
+#
+#                 population_param = Population.Parameters(rng, LGP.LGP, model_param, data_x, data_y, weights=cluster_weights)
+#                 population_param.recomb_rate = 0.5
+#                 #population_param.num_eval_per_gen = 5
+#                 population = Population.Population(population_param)
+#                 population.initialize_run()
+#                 with open(k_fld_path + '/Population_{}_model_param.txt'.format(cluster), 'w') as f:
+#                     population_param.print_attributes(file=f)
+#
+#
+#                 population.run_evolution(500)
+#
+#                 with open(k_fld_path + '/model_' + repr(cluster) + '.txt', 'w') as f:
+#                     highest_ind = population.return_best()
+#                     highest_ind.print_program(effective=True, file=f)
+#                 plot_model_heatmap(data_span, data_x, data_y, highest_ind, k_fld_path, 'model_' + repr(cluster) + '_heatmap', weights=cluster_weights)
+#
+#     # plt.show()
+
+'''main for MOCK clustering stuff (using new and improved synthetic data)'''
 def main():
-    # setting rng for run
+
+def test():
     rng = default_rng(seed=1)
+    var = LGP.Parameters(2, rng)
 
-    # choosing what dataset to use
-    dataset_name = 'dataset_01.pkl'
-    fld_dataset_name = dataset_name.removesuffix('.pkl')
-    fld_dataset_path = "output/" + fld_dataset_name
+    print(var)
 
-    # choosing whether to remove previous runs and data of dataset
-    rmv_prev_dataset_data = False
+    var2 = LGP.LGP(var)
 
-    # if we want to overwrite the previous run with this one
-    overwrite_prev_run = False
+    print(var2)
+    print(ctypes.cast(id(var2), ctypes.py_object))
+    location = id(var2)
+    print(location)
 
-    try:
-        os.makedirs(fld_dataset_path)
-    except FileExistsError:
-        if rmv_prev_dataset_data:
-            shutil.rmtree(fld_dataset_path)
-            os.makedirs(fld_dataset_path)
-
-
-    # loading the pickled dataset
-    with open("data/" + dataset_name, 'rb') as f:
-        data = pickle.load(f)
-
-    # splitting data into variables and target
-    data_x = data[:,0:-1]
-    data_y = data[:,-1]
-    num_samples, num_var = data_x.shape
-    data_span = gen_points(data_x, 50000) #used for heatmaps
-    #plotting the raw data
-    if rmv_prev_dataset_data:
-        plot_data(data_x[:,0], data_x[:,1], fld_dataset_path, 'raw_data', color=data_y)
-
-
-    # the run parameters
-    percentage_boundary_points = 0.4 #percent of points to choose when selecting boundary points
-    amount_boundary_points = int(len(data_y) * percentage_boundary_points)
-    cluster_values = [2, 3] # different cluster values to test
-    # possible [cluster, non-cluster] weights to choose from
-    weight_pairs = [
-        [1, 0],  # only points in cluster are relevant
-        [1, 1],  # equivalent to ensemble on all data
-        [0.9, 0.1],
-        [0.7, 0.3]
-    ]
-
-    distance_based = False #whether weights are determined by point distance to clusters
-
-    # minimum and maximum sizes of clusters
-    min_cluster_size_percent = 0.7 # percent of boundary points that must be evenly distributed among the clusters
-    cluster_size_min = [int((min_cluster_size_percent/ k) * amount_boundary_points) for k in cluster_values]
-    cluster_size_max = [None for k in cluster_values]
-
-    for i in range(len(weight_pairs)):
-        chosen_weight = i
-        run_parameters = {
-            'percentage_boundary_points': percentage_boundary_points,
-            'amount_boundary_points': amount_boundary_points,
-            'cluster_values': cluster_values,
-            'min_cluster_size_percent': min_cluster_size_percent,
-            'cluster_size_min': cluster_size_min,
-            'cluster_size_max': cluster_size_max,
-            'weight_pairs': weight_pairs,
-            'chosen_weight': chosen_weight,
-            'distance_based': distance_based
-        }
-
-        if overwrite_prev_run:
-            fld_run_name = sorted(glob.glob('run*', root_dir=fld_dataset_path), reverse=True, key=lambda x: int(x[-2:]))[0]
-        else:
-            fld_run_name = 'run_{:02d}'.format(int(
-                sorted(glob.glob('run*', root_dir=fld_dataset_path), reverse=True, key=lambda x: int(x[-2:]))[0][-2:]) + 1)
-        # run folder path
-        fld_run_path = fld_dataset_path + '/' + fld_run_name
-
-        # creating the folder or deleting the previous one
-        try:
-            os.makedirs(fld_run_path)
-        except FileExistsError:
-            shutil.rmtree(fld_run_path)
-            os.makedirs(fld_run_path)
-
-        with open(fld_run_path + '/run_details.txt', 'w') as f:
-            for k, v in run_parameters.items():
-                print('{}: \t {}'.format(k, v), file=f)
-
-
-        # Building a complex model to find the decision boundary
-        set_random_seed(1)
-        model = Sequential()
-        model.add(Dense(128, activation='relu'))  # Input layer with 2 features, 32 neurons, ReLU activation
-        model.add(Dense(64, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
-        model.add(Dense(32, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
-        model.add(
-        Dense(1, activation='sigmoid'))  # Output layer with 1 neuron, sigmoid activation for binary classification
-
-        # adding an early stopping criteria for the model
-        # if want to use, add 'callbacks=[callback]' to model.fit
-        # callback = EarlyStopping(monitor='accuracy', patience=20, start_from_epoch=50)
-        # Compile the model
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-        # Train the model
-        model.fit(data_x, data_y, epochs=1000, batch_size=32)
-
-        # plotting the complex model heatmap
-        plot_model_heatmap(data_span, data_x, data_y, model, fld_run_path, 'complex_model_heatmap')
-
-        # saving complex model information for specific run
-        with open(fld_run_path + '/complex_model_code.txt', 'w') as f:
-            f.write('''
-        # Building a complex model to find the decision boundary
-        set_random_seed(1)
-        model = Sequential()
-        model.add(Dense(128, activation='relu'))  # Input layer with 2 features, 32 neurons, ReLU activation
-        model.add(Dense(64, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
-        model.add(Dense(32, activation='relu'))  # Hidden layer with 16 neurons, ReLU activation
-        model.add(
-        Dense(1, activation='sigmoid'))  # Output layer with 1 neuron, sigmoid activation for binary classification
-    
-        # adding an early stopping criteria for the model
-        # if want to use, add 'callbacks=[callback]' to model.fit
-        # callback = EarlyStopping(monitor='accuracy', patience=20, start_from_epoch=50)
-        # Compile the model
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    
-        # Train the model
-        model.fit(data_x, data_y, epochs=1000, batch_size=32)
-        '''
-        )
+    var2.initialize(np.array([[1,2],[3,4]]),np.array([1,0]))
+    var3 = var2.make_copy()
+    var4 = LGP.LGP(var)
+    print(id(var2))
+    a = ctypes.cast(location, ctypes.py_object).value
+    # print(var3)
+    # print(var3.param)
+    print(ctypes.cast(id(var2), ctypes.py_object))
+    print(a)
 
 
 
-        # finding the data points along to boundary
-        boundary_points_ind, boundary_points_data, = find_boundary_points(data_x, model, percentage_boundary_points)
-
-        # plotting the points along the boundary
-        boundary_coloring = np.zeros(len(data_y), dtype=int)
-        boundary_coloring[boundary_points_ind] = 1
-
-        plot_data(data_x[:, 0], data_x[:, 1], fld_run_path, 'boundary_points', color=boundary_coloring, markers=data_y)
-
-
-
-
-        cluster_weight, non_cluster_weight = weight_pairs[chosen_weight]
-
-        # going through each k value and creating models
-        for cluster_val in range(len(cluster_values)):
-            k = cluster_values[cluster_val]
-            size_min = cluster_size_min[cluster_val]
-            size_max = cluster_size_max[cluster_val]
-            # making sure there is a folder for the k value to save the output
-            k_fld_path = fld_run_path + '/' + repr(k) + '_cluster'
-            try:
-                os.makedirs(k_fld_path)
-            except FileExistsError:
-                pass
-
-            # finding the boundary and full clusters according the k value
-            boundary_clusters, clusters, cluster_centers = find_clusters(k, boundary_points_data, data_x, size_min=size_min,size_max=size_max, rng=0)
-
-            # plotting the boundary and full clusters
-            boundary_coloring[boundary_points_ind] = boundary_clusters
-            plot_data(data_x[:, 0], data_x[:, 1], k_fld_path, 'boundary_clusters', color=boundary_coloring, markers=data_y)
-            plot_data(data_x[:, 0], data_x[:, 1], k_fld_path, 'full_clusters', color=clusters, markers=data_y)
-
-            # setting up the lgp models to be used on each cluster
-            model_param = LGP.Parameters(num_var, rng)
-            model_param.operators = [0, 1, 2, 3, 4] #limiting operators to +,-,*,/
-            model_param.init_length = list(range(5,11))
-            model_param.max_length = 25
-            model_param.min_length = 4
-            model_param.max_dc = 5 # maximum crossover distance
-            # need to fix effective stuff
-            # (initialization can only work with input sep = false, macro mut should just run
-            #   intron itself instead of keeping hold of eff reg)
-            # model_param.effective_mutation = True
-            # model_param.effective_initialization = True
-            # model_param.effective_recombination = True
-
-            with open(k_fld_path + '/LGP_model_param.txt', 'w') as f:
-                model_param.print_attributes(file=f)
-
-
-            # building a model for each cluster
-            for cluster in set(clusters):
-                # cluster_data_x = data_x[clusters == cluster]
-                # cluster_data_y = data_y[clusters == cluster]
-                cluster_center = cluster_centers[cluster-1]
-                cluster_weights = find_data_weights(cluster,data_x,clusters,cluster_center,cluster_weight,non_cluster_weight,distance_based)
-
-                population_param = Population.Parameters(rng, LGP.LGP, model_param, data_x, data_y, weights=cluster_weights)
-                population_param.recomb_rate = 0.5
-                #population_param.num_eval_per_gen = 5
-                population = Population.Population(population_param)
-                population.initialize_run()
-                with open(k_fld_path + '/Population_{}_model_param.txt'.format(cluster), 'w') as f:
-                    population_param.print_attributes(file=f)
-
-
-                population.run_evolution(250)
-
-                with open(k_fld_path + '/model_' + repr(cluster) + '.txt', 'w') as f:
-                    highest_ind = population.return_best()
-                    highest_ind.print_program(effective=True, file=f)
-                plot_model_heatmap(data_span, data_x, data_y, highest_ind, k_fld_path, 'model_' + repr(cluster) + '_heatmap', weights=cluster_weights)
-
-    # plt.show()
 
 if __name__ == '__main__':
+    # test()
     main()
